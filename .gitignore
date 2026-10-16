@@ -1,0 +1,29 @@
+# Node & Frontend
+**/node_modules/
+**/dist/
+frontend/.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java & Maven
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+**/.metadata
+**/.recommenders
+**/bin/
+**/*.class
+**/*.jar
+**/*.war
+
+# IDEs & Editors
+.idea/
+.vscode/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+Thumbs.db
+Desktop.ini
+.DS_Store
