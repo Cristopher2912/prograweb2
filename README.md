@@ -1,7 +1,5 @@
 # Rick and Morty - Catálogo de Personajes
-
-Copia del proyecto TechStore con el mismo frontend, pero consumiendo la API pública de
-[Rick and Morty](https://rickandmortyapi.com/api/character) en lugar del backend propio.
+# Cristopher Alquinga - Programación WEB
 
 ## Frontend (`frontend/`)
 
