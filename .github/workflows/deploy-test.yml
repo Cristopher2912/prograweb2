@@ -94,6 +94,9 @@ jobs:
               -e "s#__PRODUCT_MANAGER_URL__#http://${{ secrets.EC2_HOST }}:8091/#g" \
               -e "s#__RICK_AND_MORTY_URL__#http://${{ secrets.EC2_HOST }}:8092/#g" \
               home/index.html
+            sudo mkdir -p /var/www/progra-web-test/home
+            sudo cp home/index.html /var/www/progra-web-test/home/index.html
+            sudo chmod -R 755 /var/www/progra-web-test
             sudo cp deploy/nginx/test.conf /etc/nginx/conf.d/test.conf
             sudo nginx -t
             sudo systemctl reload nginx
