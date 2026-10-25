@@ -10,7 +10,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/progra-web
+  # Docker image tags must be lowercase; the GitHub owner/repo names may not be.
+  IMAGE_PREFIX: ghcr.io/cristopher2912/progra-web
 
 jobs:
   build-and-push:
