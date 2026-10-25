@@ -3,24 +3,24 @@
  * Integrates: Realtime Search, Bootstrap 5 Modal Popup, API Backend Consumer (CRUD)
  */
 
-// Conexión automática: usa proxy '/api/products' si está en Vite dev (puerto 5173), o directo al backend
+// Automatic connection: uses the '/api/products' proxy in Vite dev (port 5173), or the backend directly
 const API_BASE_URL = (window.location.port === '5173')
   ? '/api/products'
   : 'http://localhost:8080/api/products';
 
-// Fallback seed data en caso de que el backend aún no esté corriendo en el puerto 8080
+// Fallback seed data in case the backend is not yet running on port 8080
 const FALLBACK_PRODUCTS = [
   { id: 1, name: "Laptop Dell", price: 1200.0, stock: 15 },
-  { id: 2, name: "Mouse Inalambrico", price: 25.5, stock: 40 },
-  { id: 3, name: "Teclado Mecanico", price: 70.0, stock: 20 },
+  { id: 2, name: "Wireless Mouse", price: 25.5, stock: 40 },
+  { id: 3, name: "Mechanical Keyboard", price: 70.0, stock: 20 },
   { id: 4, name: "Monitor UltraWide 34\"", price: 450.0, stock: 8 },
-  { id: 5, name: "Auriculares Noise Cancelling", price: 180.0, stock: 12 },
+  { id: 5, name: "Noise Cancelling Headphones", price: 180.0, stock: 12 },
   { id: 6, name: "Webcam 4K HDR", price: 95.0, stock: 25 },
-  { id: 7, name: "Microfono Condensador USB", price: 110.0, stock: 18 },
-  { id: 8, name: "Silla Ergonomica Pro", price: 299.9, stock: 5 }
+  { id: 7, name: "USB Condenser Microphone", price: 110.0, stock: 18 },
+  { id: 8, name: "Ergonomic Pro Chair", price: 299.9, stock: 5 }
 ];
 
-// Estado de la aplicación
+// Application state
 const state = {
   products: [],
   filteredProducts: [],
@@ -35,7 +35,7 @@ const state = {
 let productDetailModal = null;
 let productFormModal = null;
 
-// Inicialización al cargar el DOM
+// Initialization on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   productDetailModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
   productFormModal = new bootstrap.Modal(document.getElementById('productFormModal'));
@@ -67,7 +67,7 @@ function initEventListeners() {
     searchInput.focus();
   });
 
-  // Atajo de teclado (tecla / para enfocar buscador)
+  // Keyboard shortcut (press / to focus the search input)
   window.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== searchInput) {
       e.preventDefault();
@@ -75,13 +75,13 @@ function initEventListeners() {
     }
   });
 
-  // Filtro de ordenación
+  // Sort filter
   document.getElementById('sortSelect').addEventListener('change', (e) => {
     state.sortBy = e.target.value;
     applyFilters();
   });
 
-  // Filtro de stock
+  // Stock filter
   document.querySelectorAll('.filter-pill').forEach(pill => {
     pill.addEventListener('click', (e) => {
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active', 'bg-indigo-600', 'text-white'));
@@ -95,21 +95,21 @@ function initEventListeners() {
     });
   });
 
-  // Botón recargar
+  // Refresh button
   document.getElementById('refreshBtn').addEventListener('click', () => {
-    showToast('Actualizando datos...', 'info');
+    showToast('Refreshing data...', 'info');
     loadProducts();
   });
 
-  // Botón Nuevo Producto
+  // New Product button
   document.getElementById('openCreateModalBtn').addEventListener('click', () => {
     openCreateForm();
   });
 
-  // Guardar formulario de producto (POST o PUT)
+  // Save product form (POST or PUT)
   document.getElementById('productForm').addEventListener('submit', handleProductFormSubmit);
 
-  // Acciones dentro del popup de detalle
+  // Actions inside the detail popup
   document.getElementById('modalEditBtn').addEventListener('click', () => {
     if (state.selectedProduct) {
       productDetailModal.hide();
@@ -119,7 +119,7 @@ function initEventListeners() {
 
   document.getElementById('modalDeleteBtn').addEventListener('click', () => {
     if (state.selectedProduct) {
-      if (confirm(`¿Estás seguro de eliminar el producto "${state.selectedProduct.name}"?`)) {
+      if (confirm(`Are you sure you want to delete the product "${state.selectedProduct.name}"?`)) {
         deleteProduct(state.selectedProduct.id);
       }
     }
@@ -127,7 +127,7 @@ function initEventListeners() {
 }
 
 /**
- * Carga productos desde el Backend API
+ * Loads products from the Backend API
  */
 async function loadProducts() {
   const loadingSpinner = document.getElementById('loadingSpinner');
@@ -151,13 +151,13 @@ async function loadProducts() {
     const data = await response.json();
     state.products = Array.isArray(data) ? data : [];
     state.isLiveBackend = true;
-    updateBackendStatusBadge(true, `Conectado al Backend (${state.products.length} productos)`);
+    updateBackendStatusBadge(true, `Connected to backend (${state.products.length} products)`);
   } catch (error) {
-    console.warn("Backend no disponible en http://localhost:8080/api/products. Usando datos demostrativos.", error);
+    console.warn("Backend not available at http://localhost:8080/api/products. Using demo data.", error);
     state.isLiveBackend = false;
-    // Usamos datos de demostración si el backend aún no se ha levantado
+    // Use demo data if the backend has not started yet
     state.products = [...FALLBACK_PRODUCTS];
-    updateBackendStatusBadge(false, "Backend sin conexión (Modo Demostración)");
+    updateBackendStatusBadge(false, "Backend offline (Demo Mode)");
   } finally {
     loadingSpinner.classList.add('d-none');
     gridContainer.classList.remove('d-none');
@@ -166,7 +166,7 @@ async function loadProducts() {
 }
 
 /**
- * Aplica búsqueda en tiempo real, filtros y ordenamiento
+ * Applies real-time search, filters and sorting
  */
 function applyFilters() {
   let result = [...state.products];
@@ -190,7 +190,7 @@ function applyFilters() {
     result = result.filter(item => (item.stock || 0) === 0);
   }
 
-  // 3. Ordenamiento
+  // 3. Sorting
   switch (state.sortBy) {
     case 'price-asc':
       result.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -213,14 +213,14 @@ function applyFilters() {
 }
 
 /**
- * Renderiza las tarjetas de producto en el Grid
+ * Renders product cards in the grid
  */
 function renderProducts() {
   const container = document.getElementById('productsGrid');
   const emptyState = document.getElementById('emptyState');
   const countBadge = document.getElementById('resultsCountBadge');
 
-  countBadge.textContent = `${state.filteredProducts.length} de ${state.products.length}`;
+  countBadge.textContent = `${state.filteredProducts.length} of ${state.products.length}`;
 
   if (state.filteredProducts.length === 0) {
     container.innerHTML = '';
@@ -241,10 +241,10 @@ function renderProducts() {
         onclick="openProductPopup(${product.id})"
         role="button"
         tabindex="0"
-        aria-label="Ver detalles de ${escapeHtml(product.name)}"
+        aria-label="View details for ${escapeHtml(product.name)}"
         onkeydown="if(event.key === 'Enter') openProductPopup(${product.id})"
       >
-        <!-- Imagen del Producto -->
+        <!-- Product Image -->
         <div class="product-image-box position-relative">
           <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy">
           <span class="position-absolute top-0 end-0 m-2 badge ${stockStatus.badgeClass}">
@@ -252,7 +252,7 @@ function renderProducts() {
           </span>
         </div>
 
-        <!-- Encabezado con Flexbox -->
+        <!-- Header with Flexbox -->
         <div class="d-flex justify-content-between align-items-start mb-2">
           <div>
             <span class="text-xs text-muted font-mono">ID #${product.id}</span>
@@ -260,25 +260,25 @@ function renderProducts() {
           </div>
         </div>
 
-        <!-- Cuerpo de Tarjeta -->
+        <!-- Card Body -->
         <div class="my-2">
           <div class="d-flex justify-content-between align-items-baseline">
-            <span class="small text-muted">Precio:</span>
+            <span class="small text-muted">Price:</span>
             <span class="price-text">${formattedPrice}</span>
           </div>
           
           <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
-            <span>Disponibilidad:</span>
+            <span>Availability:</span>
             <span class="font-medium ${stockStatus.textClass}">
-              <i class="bi bi-box-seam me-1"></i>${product.stock || 0} u.
+              <i class="bi bi-box-seam me-1"></i>${product.stock || 0} units
             </span>
           </div>
         </div>
 
-        <!-- Footer de la Tarjeta con Flexbox y Botón Pop-up -->
+        <!-- Card Footer with Flexbox and Pop-up Button -->
         <div class="card-footer-flex">
           <span class="small text-primary font-medium">
-            Ver detalle <i class="bi bi-chevron-right ms-1"></i>
+            View details <i class="bi bi-chevron-right ms-1"></i>
           </span>
           <button 
             type="button" 
@@ -286,7 +286,7 @@ function renderProducts() {
             style="font-size: 12px;"
             onclick="event.stopPropagation(); openProductPopup(${product.id})"
           >
-            Detalle
+            Details
           </button>
         </div>
       </article>
@@ -295,7 +295,7 @@ function renderProducts() {
 }
 
 /**
- * Abre el Pop-up / Modal con toda la información detallada del producto
+ * Opens the pop-up/modal with the product's full detailed information
  */
 window.openProductPopup = function(productId) {
   const product = state.products.find(p => p.id === productId);
@@ -305,13 +305,13 @@ window.openProductPopup = function(productId) {
   const imageUrl = resolveProductImage(product.name);
   const stockStatus = getStockStatus(product.stock);
 
-  // Llenar contenido del Modal
+  // Fill modal content
   document.getElementById('modalProductImg').src = imageUrl;
   document.getElementById('modalProductImg').alt = product.name;
   document.getElementById('modalProductId').textContent = `ID #${product.id} · Ref: SKU-ARQUI-${product.id}`;
   document.getElementById('modalProductName').textContent = product.name;
   document.getElementById('modalProductPrice').textContent = formatCurrency(product.price);
-  document.getElementById('modalProductStock').textContent = `${product.stock || 0} unidades`;
+  document.getElementById('modalProductStock').textContent = `${product.stock || 0} units`;
   
   // Badge de Stock
   const badgeEl = document.getElementById('modalStockBadge');
@@ -352,7 +352,7 @@ function openEditForm(product) {
 }
 
 /**
- * Envío de formulario (POST o PUT a la API)
+ * Form submission (POST or PUT to the API)
  */
 async function handleProductFormSubmit(e) {
   e.preventDefault();
@@ -363,7 +363,7 @@ async function handleProductFormSubmit(e) {
   const stock = parseInt(document.getElementById('formProductStock').value, 10);
 
   if (!name || isNaN(price) || isNaN(stock)) {
-    showToast('Por favor completa todos los campos correctamente.', 'warning');
+    showToast('Please fill in all fields correctly.', 'warning');
     return;
   }
 
@@ -371,36 +371,36 @@ async function handleProductFormSubmit(e) {
 
   try {
     if (id) {
-      // ACTUALIZAR (PUT)
+      // UPDATE (PUT)
       if (state.isLiveBackend) {
         const res = await fetch(`${API_BASE_URL}/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error('Error al actualizar');
-        showToast(`Producto #${id} actualizado en el backend.`, 'success');
+        if (!res.ok) throw new Error('Error updating product');
+        showToast(`Product #${id} updated on the backend.`, 'success');
       } else {
-        // En modo fallback
+        // In fallback mode
         const idx = state.products.findIndex(p => p.id === parseInt(id, 10));
         if (idx !== -1) state.products[idx] = { id: parseInt(id, 10), ...payload };
-        showToast('Producto actualizado en memoria.', 'info');
+        showToast('Product updated in memory.', 'info');
       }
     } else {
-      // CREAR (POST)
+      // CREATE (POST)
       if (state.isLiveBackend) {
         const res = await fetch(API_BASE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error('Error al crear producto');
-        showToast('Producto creado con éxito en el backend.', 'success');
+        if (!res.ok) throw new Error('Error creating product');
+        showToast('Product successfully created on the backend.', 'success');
       } else {
-        // En modo fallback
+        // In fallback mode
         const newId = (state.products.reduce((max, p) => Math.max(max, p.id || 0), 0) + 1);
         state.products.unshift({ id: newId, ...payload });
-        showToast('Producto creado en memoria.', 'info');
+        showToast('Product created in memory.', 'info');
       }
     }
 
@@ -411,34 +411,34 @@ async function handleProductFormSubmit(e) {
       applyFilters();
     }
   } catch (error) {
-    showToast('No se pudo guardar: ' + error.message, 'danger');
+    showToast('Could not save: ' + error.message, 'danger');
   }
 }
 
 /**
- * Eliminar producto (DELETE a la API)
+ * Delete product (DELETE to the API)
  */
 async function deleteProduct(id) {
   try {
     if (state.isLiveBackend) {
       const res = await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Error al eliminar');
-      showToast(`Producto #${id} eliminado con éxito`, 'success');
+      if (!res.ok) throw new Error('Error deleting product');
+      showToast(`Product #${id} successfully deleted`, 'success');
       productDetailModal.hide();
       await loadProducts();
     } else {
       state.products = state.products.filter(p => p.id !== id);
-      showToast(`Producto #${id} eliminado`, 'info');
+      showToast(`Product #${id} deleted`, 'info');
       productDetailModal.hide();
       applyFilters();
     }
   } catch (err) {
-    showToast('No se pudo eliminar: ' + err.message, 'danger');
+    showToast('Could not delete: ' + err.message, 'danger');
   }
 }
 
 /**
- * Mapeo inteligente de fotos reales a productos
+ * Smart mapping of real photos to products
  */
 function resolveProductImage(name = '') {
   const lower = name.toLowerCase();
@@ -454,17 +454,17 @@ function resolveProductImage(name = '') {
   if (lower.includes('monitor') || lower.includes('pantalla')) {
     return '/assets/laptop.jpg';
   }
-  // Fallback a foto de tecnología general
+  // Fallback to a generic tech photo
   return '/assets/teclado.jpg';
 }
 
 /**
- * Determina el badge y color según el stock (estilo limpio y estándar)
+ * Determines the badge and color based on stock (clean, standard style)
  */
 function getStockStatus(stock = 0) {
   if (stock <= 0) {
     return {
-      label: 'Agotado',
+      label: 'Out of Stock',
       badgeClass: 'bg-danger text-white',
       textClass: 'text-danger',
       barColor: 'bg-danger',
@@ -473,7 +473,7 @@ function getStockStatus(stock = 0) {
   }
   if (stock <= 10) {
     return {
-      label: 'Stock Bajo',
+      label: 'Low Stock',
       badgeClass: 'bg-warning text-dark',
       textClass: 'text-warning',
       barColor: 'bg-warning',
@@ -481,7 +481,7 @@ function getStockStatus(stock = 0) {
     };
   }
   return {
-    label: 'En Stock',
+    label: 'In Stock',
     badgeClass: 'bg-success text-white',
     textClass: 'text-success',
     barColor: 'bg-success',
@@ -490,10 +490,10 @@ function getStockStatus(stock = 0) {
 }
 
 /**
- * Formateo de precio a moneda
+ * Price-to-currency formatting
  */
 function formatCurrency(amount = 0) {
-  return new Intl.NumberFormat('es-CO', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2
@@ -501,7 +501,7 @@ function formatCurrency(amount = 0) {
 }
 
 /**
- * Indicador dinámico de Media Query activa
+ * Dynamic indicator of the active media query
  */
 function initResponsiveIndicator() {
   const indicator = document.getElementById('breakpointBadge');
@@ -510,11 +510,11 @@ function initResponsiveIndicator() {
   function update() {
     const width = window.innerWidth;
     if (width < 768) {
-      indicator.innerHTML = '<i class="bi bi-phone me-1"></i> Móvil: <strong>1 Columna</strong>';
+      indicator.innerHTML = '<i class="bi bi-phone me-1"></i> Mobile: <strong>1 Column</strong>';
     } else if (width < 1200) {
-      indicator.innerHTML = '<i class="bi bi-tablet me-1"></i> Normal: <strong>3 Columnas</strong>';
+      indicator.innerHTML = '<i class="bi bi-tablet me-1"></i> Normal: <strong>3 Columns</strong>';
     } else {
-      indicator.innerHTML = '<i class="bi bi-display me-1"></i> Grande: <strong>4 Columnas</strong>';
+      indicator.innerHTML = '<i class="bi bi-display me-1"></i> Large: <strong>4 Columns</strong>';
     }
   }
 
@@ -523,7 +523,7 @@ function initResponsiveIndicator() {
 }
 
 /**
- * Actualiza el indicador de conexión al backend
+ * Updates the backend connection indicator
  */
 function updateBackendStatusBadge(isLive, message) {
   const dot = document.getElementById('backendStatusDot');
@@ -542,7 +542,7 @@ function updateBackendStatusBadge(isLive, message) {
 }
 
 /**
- * Sistema de Notificaciones Toast
+ * Toast notification system
  */
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');

@@ -1,6 +1,6 @@
 /* ==========================================================================
-   TechStore - Estilo Blanco, Limpio y Normal
-   Tecnologías: Media Queries, CSS Grid, Flexbox, Bootstrap 5 & Tailwind
+   TechStore - Clean, White and Normal Style
+   Technologies: Media Queries, CSS Grid, Flexbox, Bootstrap 5 & Tailwind
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -8,7 +8,7 @@
 :root {
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   
-  /* Paleta Blanca / Normal */
+  /* White / Normal Palette */
   --bg-page: #f8fafc;
   --bg-surface: #ffffff;
   --border-color: #e2e8f0;
@@ -34,20 +34,20 @@ body {
 }
 
 /* ==========================================================================
-   1. GRID Y MEDIA QUERIES (REQUISITO EXPLÍCITO)
-      - Celular (< 768px): 1 columna
-      - Normal (768px a 1199px): 3 columnas
-      - Grande (>= 1200px): 4 columnas
+   1. GRID AND MEDIA QUERIES (EXPLICIT REQUIREMENT)
+      - Mobile (< 768px): 1 column
+      - Normal (768px to 1199px): 3 columns
+      - Large (>= 1200px): 4 columns
    ========================================================================== */
 
 .products-grid {
   display: grid;
   width: 100%;
   gap: 1.5rem;
-  grid-template-columns: 1fr; /* Móvil / Celular: 1 Columna */
+  grid-template-columns: 1fr; /* Mobile: 1 Column */
 }
 
-/* Celular (< 768px) */
+/* Mobile (< 768px) */
 @media (max-width: 767.98px) {
   .products-grid {
     grid-template-columns: 1fr;
@@ -55,7 +55,7 @@ body {
   }
 }
 
-/* Normal / Tablet / Laptop (768px a 1199px) -> 3 Columnas */
+/* Normal / Tablet / Laptop (768px to 1199px) -> 3 Columns */
 @media (min-width: 768px) and (max-width: 1199.98px) {
   .products-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -63,7 +63,7 @@ body {
   }
 }
 
-/* Pantalla Grande (>= 1200px) -> 4 Columnas */
+/* Large Screen (>= 1200px) -> 4 Columns */
 @media (min-width: 1200px) {
   .products-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -72,7 +72,7 @@ body {
 }
 
 /* ==========================================================================
-   2. FLEXBOX PARA ALINEACIONES
+   2. FLEXBOX FOR ALIGNMENT
    ========================================================================== */
 
 .flex-between {
@@ -98,7 +98,7 @@ body {
 }
 
 /* ==========================================================================
-   3. TARJETAS BLANCAS NORMALES
+   3. NORMAL WHITE CARDS
    ========================================================================== */
 
 .product-card {
@@ -140,7 +140,7 @@ body {
 }
 
 /* ==========================================================================
-   4. MODAL POP-UP BLANCO Y LIMPIO
+   4. CLEAN WHITE MODAL POP-UP
    ========================================================================== */
 
 .clean-modal .modal-content {
@@ -175,7 +175,7 @@ body {
   border-radius: 9999px;
 }
 
-/* Indicador de conexión */
+/* Connection indicator */
 .dot-status {
   width: 8px;
   height: 8px;
