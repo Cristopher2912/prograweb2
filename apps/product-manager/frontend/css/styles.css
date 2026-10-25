@@ -1,0 +1,193 @@
+/* ==========================================================================
+   TechStore - Estilo Blanco, Limpio y Normal
+   Tecnologías: Media Queries, CSS Grid, Flexbox, Bootstrap 5 & Tailwind
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Paleta Blanca / Normal */
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --border-color: #e2e8f0;
+  --border-color-hover: #cbd5e1;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   1. GRID Y MEDIA QUERIES (REQUISITO EXPLÍCITO)
+      - Celular (< 768px): 1 columna
+      - Normal (768px a 1199px): 3 columnas
+      - Grande (>= 1200px): 4 columnas
+   ========================================================================== */
+
+.products-grid {
+  display: grid;
+  width: 100%;
+  gap: 1.5rem;
+  grid-template-columns: 1fr; /* Móvil / Celular: 1 Columna */
+}
+
+/* Celular (< 768px) */
+@media (max-width: 767.98px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Normal / Tablet / Laptop (768px a 1199px) -> 3 Columnas */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* Pantalla Grande (>= 1200px) -> 4 Columnas */
+@media (min-width: 1200px) {
+  .products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* ==========================================================================
+   2. FLEXBOX PARA ALINEACIONES
+   ========================================================================== */
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-flex {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.card-footer-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ==========================================================================
+   3. TARJETAS BLANCAS NORMALES
+   ========================================================================== */
+
+.product-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-color-hover);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.product-image-box {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.product-image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.price-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   4. MODAL POP-UP BLANCO Y LIMPIO
+   ========================================================================== */
+
+.clean-modal .modal-content {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  color: #0f172a;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.clean-modal .modal-header {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+
+.clean-modal .modal-footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
+  background-color: #f8fafc;
+}
+
+.stock-meter-bg {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.stock-meter-val {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+/* Indicador de conexión */
+.dot-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.dot-green {
+  background-color: #16a34a;
+}
+
+.dot-amber {
+  background-color: #d97706;
+}
