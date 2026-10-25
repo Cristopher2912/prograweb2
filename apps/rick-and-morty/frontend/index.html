@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personajes - Rick and Morty</title>
+  <title>Characters - Rick and Morty</title>
 
   <!-- Google Font: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,14 +36,14 @@
     }
   </script>
 
-  <!-- Custom Stylesheet (Media Queries, Grid, Flexbox y Estilo Blanco Limpio) -->
+  <!-- Custom Stylesheet (Media Queries, Grid, Flexbox and Clean White Style) -->
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
 
   <!-- ========================================================================
-       BARRA DE NAVEGACIÓN BLANCA
+       WHITE NAVIGATION BAR
        ======================================================================== -->
   <header class="sticky-top bg-white border-b border-gray-200 py-3 shadow-sm z-50">
     <div class="container-fluid px-3 px-md-5">
@@ -55,9 +55,9 @@
         </div>
 
         <button id="refreshBtn" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1.5"
-          title="Actualizar lista">
+          title="Refresh list">
           <i class="bi bi-arrow-clockwise"></i>
-          <span class="d-none d-sm-inline">Actualizar</span>
+          <span class="d-none d-sm-inline">Refresh</span>
         </button>
 
       </div>
@@ -65,29 +65,48 @@
   </header>
 
   <!-- ========================================================================
-       CONTENIDO PRINCIPAL
+       MAIN CONTENT
        ======================================================================== -->
   <main class="container-fluid px-3 px-md-5 py-4">
 
+    <!-- Resource Tabs -->
+    <ul class="nav nav-pills mb-4" id="resourceTabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-resource="character" type="button">
+          <i class="bi bi-people-fill me-1"></i> Characters
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-resource="location" type="button">
+          <i class="bi bi-geo-alt-fill me-1"></i> Locations
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-resource="episode" type="button">
+          <i class="bi bi-film me-1"></i> Episodes
+        </button>
+      </li>
+    </ul>
+
     <div class="mb-4">
-      <h2 class="h4 font-bold text-slate-900 m-0">Personajes</h2>
-      <p class="text-muted small m-0 mt-1">Haz clic en cualquier personaje para abrir la ventana con su información
-        detallada.</p>
+      <h2 id="sectionTitle" class="h4 font-bold text-slate-900 m-0">Characters</h2>
+      <p id="sectionSubtitle" class="text-muted small m-0 mt-1">Click any character to open the window with its
+        detailed information.</p>
     </div>
 
-    <!-- Barra de Búsqueda en Tiempo Real y Filtros -->
+    <!-- Real-Time Search Bar and Filters -->
     <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-        <!-- Buscador Realtime -->
+        <!-- Real-time search -->
         <div class="flex-grow-1 position-relative" style="min-width: 260px;">
           <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
           <input type="text" id="realtimeSearchInput"
             class="form-control form-control-sm ps-5 pe-4 py-2 border-gray-300"
-            placeholder="Buscar personaje por nombre en tiempo real..." autocomplete="off">
+            placeholder="Search by name in real time..." autocomplete="off">
           <button type="button" id="clearSearchBtn"
             class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-1 text-muted d-none border-0"
-            title="Limpiar">
+            title="Clear">
             <i class="bi bi-x-circle-fill"></i>
           </button>
           <small id="searchHint" class="text-muted d-none position-absolute" style="top: 100%; left: 0;">
@@ -96,26 +115,26 @@
           </small>
         </div>
 
-        <!-- Filtros de Estado -->
-        <div class="d-flex align-items-center gap-1 flex-wrap">
-          <button class="filter-pill btn btn-sm btn-primary py-1 px-3" data-filter="">Todos</button>
-          <button class="filter-pill btn btn-sm btn-outline-secondary py-1 px-3" data-filter="alive">Vivos</button>
-          <button class="filter-pill btn btn-sm btn-outline-secondary py-1 px-3" data-filter="dead">Muertos</button>
+        <!-- Status Filters (Characters only) -->
+        <div id="statusFiltersWrap" class="d-flex align-items-center gap-1 flex-wrap">
+          <button class="filter-pill btn btn-sm btn-primary py-1 px-3" data-filter="">All</button>
+          <button class="filter-pill btn btn-sm btn-outline-secondary py-1 px-3" data-filter="alive">Alive</button>
+          <button class="filter-pill btn btn-sm btn-outline-secondary py-1 px-3" data-filter="dead">Dead</button>
           <button class="filter-pill btn btn-sm btn-outline-secondary py-1 px-3"
-            data-filter="unknown">Desconocido</button>
+            data-filter="unknown">Unknown</button>
         </div>
 
-        <!-- Selector de Ordenación -->
+        <!-- Sort Selector -->
         <div class="d-flex align-items-center gap-2">
-          <span class="small text-muted d-none d-md-inline">Ordenar:</span>
+          <span class="small text-muted d-none d-md-inline">Sort:</span>
           <select id="sortSelect" class="form-select form-select-sm border-gray-300" style="width: auto;">
-            <option value="default">Por defecto</option>
-            <option value="name-asc">Nombre (A-Z)</option>
-            <option value="name-desc">Nombre (Z-A)</option>
+            <option value="default">Default</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
           </select>
         </div>
 
-        <!-- Contador de Resultados -->
+        <!-- Results Counter -->
         <div class="small text-muted">
           <span>Total: <strong id="resultsCountBadge" class="text-slate-900">0</strong></span>
         </div>
@@ -124,34 +143,34 @@
     </div>
 
     <!-- ======================================================================
-         GRID RESPONSIVE (Media Queries: 1 Celular, 3 Normal, 4 Grande)
+         RESPONSIVE GRID (Media Queries: 1 Mobile, 3 Normal, 4 Large)
          ====================================================================== -->
     <section>
       <div id="loadingSpinner" class="text-center py-5">
         <div class="spinner-border text-primary spinner-border-sm mb-2" role="status"></div>
-        <p class="small text-muted m-0">Cargando personajes desde la API de Rick and Morty...</p>
+        <p id="loadingText" class="small text-muted m-0">Loading characters from the Rick and Morty API...</p>
       </div>
 
       <div id="productsGrid" class="products-grid d-none"></div>
 
       <div id="emptyState" class="text-center py-5 bg-white rounded-lg border border-gray-200 p-4 d-none">
         <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
-        <h5 class="h6 text-slate-800 m-0">No se encontraron personajes</h5>
-        <p class="small text-muted mt-1 mb-3">Intenta con otro término de búsqueda.</p>
+        <h5 id="emptyStateTitle" class="h6 text-slate-800 m-0">No characters found</h5>
+        <p class="small text-muted mt-1 mb-3">Try a different search term.</p>
         <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('clearSearchBtn').click()">
-          Limpiar búsqueda
+          Clear search
         </button>
       </div>
 
-      <!-- Paginación -->
+      <!-- Pagination -->
       <div id="pagination" class="d-flex justify-content-center align-items-center gap-3 mt-4 d-none">
         <button id="prevPageBtn" class="btn btn-sm btn-outline-secondary">
-          <i class="bi bi-chevron-left"></i> Anterior
+          <i class="bi bi-chevron-left"></i> Previous
         </button>
-        <span class="small text-muted">Página <strong id="currentPageLabel" class="text-slate-900">1</strong> de <strong
+        <span class="small text-muted">Page <strong id="currentPageLabel" class="text-slate-900">1</strong> of <strong
             id="totalPagesLabel" class="text-slate-900">1</strong></span>
         <button id="nextPageBtn" class="btn btn-sm btn-outline-secondary">
-          Siguiente <i class="bi bi-chevron-right"></i>
+          Next <i class="bi bi-chevron-right"></i>
         </button>
       </div>
     </section>
@@ -159,7 +178,7 @@
   </main>
 
   <!-- ========================================================================
-       MODAL POP-UP DEL PERSONAJE
+       CHARACTER DETAIL MODAL
        ======================================================================== -->
   <div class="modal fade clean-modal" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel"
     aria-hidden="true">
@@ -168,62 +187,27 @@
 
         <div class="modal-header d-flex justify-content-between align-items-center">
           <h5 class="modal-title h6 font-bold m-0 text-slate-900" id="productDetailModalLabel">
-            <i class="bi bi-info-circle text-primary me-1"></i> Detalle del Personaje
+            <i class="bi bi-info-circle text-primary me-1"></i> <span id="modalTitleText">Details</span>
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body p-4">
           <div class="row g-4 align-items-center">
 
-            <div class="col-12 col-md-5">
+            <div id="modalImgCol" class="col-12 col-md-5">
               <div class="border rounded bg-light overflow-hidden text-center">
                 <img id="modalImg" src="" alt="" class="img-fluid w-100">
               </div>
             </div>
 
-            <div class="col-12 col-md-7">
+            <div id="modalInfoCol" class="col-12 col-md-7">
               <small id="modalId" class="text-muted font-mono d-block mb-1"></small>
               <h3 id="modalName" class="h5 font-bold text-slate-900 mb-2"></h3>
               <span id="modalStatusBadge" class="badge mb-3"></span>
 
-              <div class="row g-2 small">
-                <div class="col-6">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Especie</div>
-                    <strong id="modalSpecies"></strong>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Género</div>
-                    <strong id="modalGender"></strong>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Tipo</div>
-                    <strong id="modalType"></strong>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Episodios</div>
-                    <strong id="modalEpisodes"></strong>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Origen</div>
-                    <strong id="modalOrigin"></strong>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="p-2 border rounded bg-white">
-                    <div class="text-muted">Última ubicación</div>
-                    <strong id="modalLocation"></strong>
-                  </div>
-                </div>
+              <div id="modalInfoGrid" class="row g-2 small">
+                <!-- Filled dynamically by app.js depending on the resource type -->
               </div>
             </div>
 
@@ -232,7 +216,7 @@
 
         <div class="modal-footer d-flex justify-content-start">
           <button type="button" id="modalBackBtn" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-arrow-left me-1"></i> Volver
+            <i class="bi bi-arrow-left me-1"></i> Back
           </button>
         </div>
 
