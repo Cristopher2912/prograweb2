@@ -13,8 +13,8 @@ public class DataSeeder {
     CommandLineRunner initDatabase(ProductRepository repo) {
         return args -> {
             repo.save(new Product("Laptop Dell", 1200.0, 15));
-            repo.save(new Product("Mouse Inalambrico", 25.5, 40));
-            repo.save(new Product("Teclado Mecanico", 70.0, 20));
+            repo.save(new Product("Wireless Mouse", 25.5, 40));
+            repo.save(new Product("Mechanical Keyboard", 70.0, 20));
         };
     }
 }

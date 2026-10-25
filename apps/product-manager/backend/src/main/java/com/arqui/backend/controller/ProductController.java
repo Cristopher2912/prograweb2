@@ -19,13 +19,13 @@ public class ProductController {
         this.repository = repository;
     }
 
-    // 1. LISTAR TODOS (GET)
+    // 1. LIST ALL (GET)
     @GetMapping
     public List<Product> getAll() {
         return repository.findAll();
     }
 
-    // 2. OBTENER UNO POR ID (GET)
+    // 2. GET ONE BY ID (GET)
     @GetMapping("/{id}")
     public ResponseEntity<Product> getById(@PathVariable Long id) {
         return repository.findById(id)
@@ -33,14 +33,14 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 3. CREAR PRODUCTO (POST)
+    // 3. CREATE PRODUCT (POST)
     @PostMapping
     public ResponseEntity<Product> create(@RequestBody Product product) {
         Product saved = repository.save(product);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
-    // 4. ACTUALIZAR PRODUCTO (PUT)
+    // 4. UPDATE PRODUCT (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
         return repository.findById(id).map(existing -> {
@@ -51,7 +51,7 @@ public class ProductController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. ELIMINAR PRODUCTO (DELETE)
+    // 5. DELETE PRODUCT (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (repository.existsById(id)) {
