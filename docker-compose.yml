@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./apps/product-manager/backend
+    image: ${BACKEND_IMAGE:-progra-web-backend}
     container_name: progra-web-backend
     restart: unless-stopped
     # Bound to localhost only: not reachable from the internet directly.
@@ -14,6 +15,7 @@ services:
   product-manager-frontend:
     build:
       context: ./apps/product-manager/frontend
+    image: ${PM_FRONTEND_IMAGE:-progra-web-product-manager-frontend}
     container_name: progra-web-product-manager
     restart: unless-stopped
     depends_on:
@@ -26,6 +28,7 @@ services:
   rick-and-morty-frontend:
     build:
       context: ./apps/rick-and-morty/frontend
+    image: ${RM_FRONTEND_IMAGE:-progra-web-rick-and-morty-frontend}
     container_name: progra-web-rick-and-morty
     restart: unless-stopped
     ports:
