@@ -3,10 +3,9 @@
  * Integrates: Realtime Search, Bootstrap 5 Modal Popup, API Backend Consumer (CRUD)
  */
 
-// Automatic connection: uses the '/api/products' proxy in Vite dev (port 5173), or the backend directly
-const API_BASE_URL = (window.location.port === '5173')
-  ? '/api/products'
-  : 'http://localhost:8080/api/products';
+// Always relative: works with the Vite dev proxy locally and with Nginx
+// reverse-proxying /api to the backend once deployed.
+const API_BASE_URL = '/api/products';
 
 // Fallback seed data in case the backend is not yet running on port 8080
 const FALLBACK_PRODUCTS = [
