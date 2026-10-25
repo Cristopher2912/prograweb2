@@ -27,7 +27,7 @@ for branching, **GitHub Actions** for CI/CD, and **AWS EC2** for hosting.
 | App | Path | Description |
 |---|---|---|
 | **Product Manager** | [`apps/product-manager`](apps/product-manager) | Full CRUD product catalog with a Spring Boot REST API and an H2 in-memory database |
-| **Rick and Morty Catalog** | [`apps/rick-and-morty`](apps/rick-and-morty) | Character catalog consuming the public [Rick and Morty API](https://rickandmortyapi.com/) |
+| **Rick and Morty Catalog** | [`apps/rick-and-morty`](apps/rick-and-morty) | Characters, Locations and Episodes catalog consuming the public [Rick and Morty API](https://rickandmortyapi.com/) |
 
 Each application has its own README with detailed setup and usage instructions.
 

@@ -3,9 +3,10 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
 ![API](https://img.shields.io/badge/API-Rick%20and%20Morty-00C300)
 
-A character catalog frontend consuming the public
-[Rick and Morty API](https://rickandmortyapi.com/). Vanilla JavaScript, no backend
-of its own — all data comes from the external REST API.
+A catalog frontend consuming three resources of the public
+[Rick and Morty API](https://rickandmortyapi.com/): Characters, Locations and
+Episodes. Vanilla JavaScript, no backend of its own — all data comes from the
+external REST API.
 
 Part of the [Web Apps Monorepo](../../README.md).
 
@@ -20,10 +21,11 @@ Part of the [Web Apps Monorepo](../../README.md).
 
 ## Features
 
-- **Real-time search**: search characters by name, querying the API with `?name=`.
-- **Filter by status**: alive / dead / unknown.
-- **Pagination**: browse through the full character list.
-- **Detail pop-up**: clicking a card opens the character's full information.
+- **Three resource tabs**: switch between Characters, Locations and Episodes.
+- **Real-time search**: search by name, querying the API with `?name=`.
+- **Filter by status** (Characters only): alive / dead / unknown.
+- **Pagination**: browse through the full list of each resource.
+- **Detail pop-up**: clicking a card opens its full information, tailored to each resource type.
 - **Responsive design**: 1 column on mobile, 3 columns on tablet, 4 columns on large screens.
 
 ## Tech stack
@@ -59,9 +61,9 @@ This app consumes the public Rick and Morty API (no authentication required):
 
 | Resource | Endpoint | Used for |
 |---|---|---|
-| Characters | `GET https://rickandmortyapi.com/api/character` | Main catalog, search and filters |
-
-> Additional resources (`/location`, `/episode`) are planned — see the project backlog.
+| Characters | `GET https://rickandmortyapi.com/api/character` | Characters tab: catalog, search and status filter |
+| Locations | `GET https://rickandmortyapi.com/api/location` | Locations tab: catalog and search |
+| Episodes | `GET https://rickandmortyapi.com/api/episode` | Episodes tab: catalog and search |
 
 ## Project structure
 

@@ -1,16 +1,90 @@
 /**
  * Rick and Morty - Frontend
- * Consume https://rickandmortyapi.com/api/character
- * Real-time search, status filter, pagination and detail pop-up.
+ * Consumes three resources of the public Rick and Morty API:
+ * https://rickandmortyapi.com/api/character
+ * https://rickandmortyapi.com/api/location
+ * https://rickandmortyapi.com/api/episode
+ * Real-time search, filters, pagination and detail pop-up for each resource.
  */
 
-const API_URL = 'https://rickandmortyapi.com/api/character';
+const API_BASE = 'https://rickandmortyapi.com/api';
 
 // Search delay: waits 4 seconds after the last keystroke before querying the API
 const SEARCH_DELAY_MS = 4000;
 
+// Per-resource configuration: endpoint, labels and how to build cards/modal content
+const RESOURCES = {
+  character: {
+    endpoint: `${API_BASE}/character`,
+    icon: 'bi-people-fill',
+    title: 'Characters',
+    subtitle: 'Click any character to open the window with its detailed information.',
+    loadingText: 'Loading characters from the Rick and Morty API...',
+    emptyTitle: 'No characters found',
+    searchPlaceholder: 'Search by name in real time...',
+    hasStatusFilter: true,
+    hasImage: true,
+    getStatusBadge: (item) => getStatus(item.status),
+    cardRows: (item) => [
+      { label: 'Species', value: escapeHtml(item.species || '-') },
+      { label: 'Gender', value: escapeHtml(translateGender(item.gender)) }
+    ],
+    modalRows: (item) => [
+      { label: 'Species', value: escapeHtml(item.species || '-') },
+      { label: 'Gender', value: escapeHtml(translateGender(item.gender)) },
+      { label: 'Type', value: escapeHtml(item.type || 'No type') },
+      { label: 'Episodes', value: String(item.episode.length) },
+      { label: 'Origin', value: escapeHtml(item.origin?.name || 'Unknown'), wide: true },
+      { label: 'Last known location', value: escapeHtml(item.location?.name || 'Unknown'), wide: true }
+    ]
+  },
+  location: {
+    endpoint: `${API_BASE}/location`,
+    icon: 'bi-geo-alt-fill',
+    title: 'Locations',
+    subtitle: 'Click any location to open the window with its detailed information.',
+    loadingText: 'Loading locations from the Rick and Morty API...',
+    emptyTitle: 'No locations found',
+    searchPlaceholder: 'Search location by name in real time...',
+    hasStatusFilter: false,
+    hasImage: false,
+    getStatusBadge: () => null,
+    cardRows: (item) => [
+      { label: 'Type', value: escapeHtml(item.type || 'Unknown') },
+      { label: 'Residents', value: String(item.residents.length) }
+    ],
+    modalRows: (item) => [
+      { label: 'Type', value: escapeHtml(item.type || 'Unknown') },
+      { label: 'Dimension', value: escapeHtml(item.dimension || 'Unknown'), wide: true },
+      { label: 'Residents', value: String(item.residents.length) }
+    ]
+  },
+  episode: {
+    endpoint: `${API_BASE}/episode`,
+    icon: 'bi-film',
+    title: 'Episodes',
+    subtitle: 'Click any episode to open the window with its detailed information.',
+    loadingText: 'Loading episodes from the Rick and Morty API...',
+    emptyTitle: 'No episodes found',
+    searchPlaceholder: 'Search episode by name in real time...',
+    hasStatusFilter: false,
+    hasImage: false,
+    getStatusBadge: () => null,
+    cardRows: (item) => [
+      { label: 'Code', value: escapeHtml(item.episode) },
+      { label: 'Characters', value: String(item.characters.length) }
+    ],
+    modalRows: (item) => [
+      { label: 'Episode code', value: escapeHtml(item.episode) },
+      { label: 'Air date', value: escapeHtml(item.air_date) },
+      { label: 'Characters', value: String(item.characters.length) }
+    ]
+  }
+};
+
 const state = {
-  characters: [],
+  resource: 'character',
+  items: [],
   page: 1,
   totalPages: 1,
   totalCount: 0,
@@ -25,16 +99,47 @@ let searchTimer = null;
 let currentRequest = null;
 
 const el = (id) => document.getElementById(id);
+const config = () => RESOURCES[state.resource];
 
 document.addEventListener('DOMContentLoaded', () => {
   detailModal = new bootstrap.Modal(el('productDetailModal'));
   initEvents();
-  loadCharacters();
+  loadItems();
 });
 
 function initEvents() {
   const input = el('realtimeSearchInput');
   const clearBtn = el('clearSearchBtn');
+
+  // Resource tabs
+  document.querySelectorAll('#resourceTabs [data-resource]').forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      const resource = e.currentTarget.dataset.resource;
+      if (resource === state.resource) return;
+
+      document.querySelectorAll('#resourceTabs [data-resource]').forEach((t) => t.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+
+      state.resource = resource;
+      state.page = 1;
+      state.searchTerm = '';
+      state.status = '';
+      state.sortBy = 'default';
+      input.value = '';
+      clearBtn.classList.add('d-none');
+      el('sortSelect').value = 'default';
+
+      document.querySelectorAll('.filter-pill').forEach((p) => {
+        p.classList.remove('btn-primary');
+        p.classList.add('btn-outline-secondary');
+      });
+      document.querySelector('.filter-pill[data-filter=""]')?.classList.add('btn-primary');
+      document.querySelector('.filter-pill[data-filter=""]')?.classList.remove('btn-outline-secondary');
+
+      applyResourceLabels();
+      loadItems();
+    });
+  });
 
   // Search with a 4-second delay
   input.addEventListener('input', (e) => {
@@ -45,7 +150,7 @@ function initEvents() {
     searchTimer = setTimeout(() => {
       el('searchHint').classList.add('d-none');
       state.page = 1;
-      loadCharacters();
+      loadItems();
     }, SEARCH_DELAY_MS);
   });
 
@@ -56,7 +161,7 @@ function initEvents() {
     state.searchTerm = '';
     state.page = 1;
     clearBtn.classList.add('d-none');
-    loadCharacters();
+    loadItems();
     input.focus();
   });
 
@@ -70,21 +175,21 @@ function initEvents() {
       e.currentTarget.classList.add('btn-primary');
       state.status = e.currentTarget.dataset.filter;
       state.page = 1;
-      loadCharacters();
+      loadItems();
     });
   });
 
   el('sortSelect').addEventListener('change', (e) => {
     state.sortBy = e.target.value;
-    renderCharacters();
+    renderItems();
   });
 
-  el('refreshBtn').addEventListener('click', loadCharacters);
+  el('refreshBtn').addEventListener('click', loadItems);
 
   el('prevPageBtn').addEventListener('click', () => {
     if (state.page > 1) {
       state.page--;
-      loadCharacters();
+      loadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
@@ -92,16 +197,28 @@ function initEvents() {
   el('nextPageBtn').addEventListener('click', () => {
     if (state.page < state.totalPages) {
       state.page++;
-      loadCharacters();
+      loadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
 }
 
+// Updates titles, placeholders and which filters are visible for the active resource
+function applyResourceLabels() {
+  const cfg = config();
+  el('sectionTitle').textContent = cfg.title;
+  el('sectionSubtitle').textContent = cfg.subtitle;
+  el('loadingText').textContent = cfg.loadingText;
+  el('emptyStateTitle').textContent = cfg.emptyTitle;
+  el('realtimeSearchInput').placeholder = cfg.searchPlaceholder;
+  el('statusFiltersWrap').classList.toggle('d-none', !cfg.hasStatusFilter);
+}
+
 /**
  * Queries the Rick and Morty API with the current filters
  */
-async function loadCharacters() {
+async function loadItems() {
+  const cfg = config();
   const spinner = el('loadingSpinner');
   const grid = el('productsGrid');
   const empty = el('emptyState');
@@ -118,87 +235,95 @@ async function loadCharacters() {
 
   const params = new URLSearchParams({ page: state.page });
   if (state.searchTerm) params.set('name', state.searchTerm);
-  if (state.status) params.set('status', state.status);
+  if (state.status && cfg.hasStatusFilter) params.set('status', state.status);
 
   try {
-    const res = await fetch(`${API_URL}?${params}`, { signal: currentRequest.signal });
+    const res = await fetch(`${cfg.endpoint}?${params}`, { signal: currentRequest.signal });
 
     if (res.status === 404) {
       // The API responds with 404 when there are no results
-      state.characters = [];
+      state.items = [];
       state.totalPages = 1;
       state.totalCount = 0;
     } else if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     } else {
       const data = await res.json();
-      state.characters = data.results;
+      state.items = data.results;
       state.totalPages = data.info.pages;
       state.totalCount = data.info.count;
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
     console.error('Error querying the API:', err);
-    state.characters = [];
+    state.items = [];
     state.totalPages = 1;
     state.totalCount = 0;
   }
 
   spinner.classList.add('d-none');
-  renderCharacters();
+  renderItems();
 }
 
-function renderCharacters() {
+function renderItems() {
+  const cfg = config();
   const grid = el('productsGrid');
   const empty = el('emptyState');
   const pagination = el('pagination');
 
   el('resultsCountBadge').textContent = state.totalCount;
 
-  if (state.characters.length === 0) {
+  if (state.items.length === 0) {
     grid.classList.add('d-none');
     pagination.classList.add('d-none');
     empty.classList.remove('d-none');
     return;
   }
 
-  const list = [...state.characters];
+  const list = [...state.items];
   if (state.sortBy === 'name-asc') list.sort((a, b) => a.name.localeCompare(b.name));
   if (state.sortBy === 'name-desc') list.sort((a, b) => b.name.localeCompare(a.name));
 
   empty.classList.add('d-none');
   grid.classList.remove('d-none');
 
-  grid.innerHTML = list.map((c) => {
-    const status = getStatus(c.status);
+  grid.innerHTML = list.map((item) => {
+    const status = cfg.getStatusBadge(item);
+    const rows = cfg.cardRows(item);
+
+    const imageBlock = cfg.hasImage
+      ? `<div class="product-image-box position-relative">
+          <img data-src="${item.image}" alt="${escapeHtml(item.name)}" decoding="async">
+          ${status ? `<span class="position-absolute top-0 end-0 m-2 badge ${status.badge}">${status.label}</span>` : ''}
+        </div>`
+      : `<div class="product-image-box position-relative d-flex align-items-center justify-content-center">
+          <i class="bi ${cfg.icon} text-primary" style="font-size: 2.5rem;"></i>
+        </div>`;
+
+    const rowsHtml = rows.map((r) => `
+          <div class="d-flex justify-content-between mt-1">
+            <span>${r.label}:</span>
+            <span class="text-dark">${r.value}</span>
+          </div>`).join('');
+
     return `
       <article
         class="product-card card-flex"
-        onclick="openCharacterPopup(${c.id})"
+        onclick="openItemPopup(${item.id})"
         role="button"
         tabindex="0"
-        aria-label="View details for ${escapeHtml(c.name)}"
-        onkeydown="if(event.key === 'Enter') openCharacterPopup(${c.id})"
+        aria-label="View details for ${escapeHtml(item.name)}"
+        onkeydown="if(event.key === 'Enter') openItemPopup(${item.id})"
       >
-        <div class="product-image-box position-relative">
-          <img data-src="${c.image}" alt="${escapeHtml(c.name)}" decoding="async">
-          <span class="position-absolute top-0 end-0 m-2 badge ${status.badge}">${status.label}</span>
-        </div>
+        ${imageBlock}
 
         <div class="mb-2">
-          <span class="text-xs text-muted font-mono">ID #${c.id}</span>
-          <h3 class="h6 font-bold text-slate-900 mt-1 mb-0">${escapeHtml(c.name)}</h3>
+          <span class="text-xs text-muted font-mono">ID #${item.id}</span>
+          <h3 class="h6 font-bold text-slate-900 mt-1 mb-0">${escapeHtml(item.name)}</h3>
         </div>
 
         <div class="my-2 small text-muted">
-          <div class="d-flex justify-content-between">
-            <span>Species:</span>
-            <span class="text-dark">${escapeHtml(c.species)}</span>
-          </div>
-          <div class="d-flex justify-content-between mt-1">
-            <span>Gender:</span>
-            <span class="text-dark">${escapeHtml(translateGender(c.gender))}</span>
-          </div>
+          ${rowsHtml}
         </div>
 
         <div class="card-footer-flex">
@@ -209,7 +334,7 @@ function renderCharacters() {
             type="button"
             class="btn btn-sm btn-outline-primary py-0 px-2"
             style="font-size: 12px;"
-            onclick="event.stopPropagation(); openCharacterPopup(${c.id})"
+            onclick="event.stopPropagation(); openItemPopup(${item.id})"
           >
             Details
           </button>
@@ -218,7 +343,7 @@ function renderCharacters() {
     `;
   }).join('');
 
-  queueImages(grid);
+  if (cfg.hasImage) queueImages(grid);
 
   el('currentPageLabel').textContent = state.page;
   el('totalPagesLabel').textContent = state.totalPages;
@@ -228,33 +353,55 @@ function renderCharacters() {
 }
 
 /**
- * Opens the pop-up with the character's full information
+ * Opens the pop-up with the item's full information
  */
-window.openCharacterPopup = function (id) {
-  const c = state.characters.find((x) => x.id === id);
-  if (!c) return;
+window.openItemPopup = function (id) {
+  const cfg = config();
+  const item = state.items.find((x) => x.id === id);
+  if (!item) return;
 
-  const status = getStatus(c.status);
+  state.selected = item.id;
 
-  const modalImg = el('modalImg');
-  modalImg.removeAttribute('src');
-  modalImg.alt = c.name;
-  state.selected = c.id;
-  loadFirstWorking(imageSources(c.image, 0), 0).then((src) => {
-    if (state.selected === c.id) modalImg.src = src;
-  });
-  el('modalId').textContent = `ID #${c.id}`;
-  el('modalName').textContent = c.name;
-  el('modalSpecies').textContent = c.species;
-  el('modalGender').textContent = translateGender(c.gender);
-  el('modalType').textContent = c.type || 'No type';
-  el('modalEpisodes').textContent = c.episode.length;
-  el('modalOrigin').textContent = c.origin.name;
-  el('modalLocation').textContent = c.location.name;
+  el('modalTitleText').textContent = `${cfg.title.slice(0, -1)} Details`;
+  el('modalId').textContent = `ID #${item.id}`;
+  el('modalName').textContent = item.name;
+
+  const imgCol = el('modalImgCol');
+  const infoCol = el('modalInfoCol');
+  if (cfg.hasImage) {
+    imgCol.classList.remove('d-none');
+    infoCol.classList.remove('col-md-12');
+    infoCol.classList.add('col-md-7');
+    const modalImg = el('modalImg');
+    modalImg.removeAttribute('src');
+    modalImg.alt = item.name;
+    loadFirstWorking(imageSources(item.image, 0), 0).then((src) => {
+      if (state.selected === item.id) modalImg.src = src;
+    });
+  } else {
+    imgCol.classList.add('d-none');
+    infoCol.classList.remove('col-md-7');
+    infoCol.classList.add('col-md-12');
+  }
 
   const badge = el('modalStatusBadge');
-  badge.className = `badge mb-3 ${status.badge}`;
-  badge.textContent = status.label;
+  const status = cfg.getStatusBadge(item);
+  if (status) {
+    badge.className = `badge mb-3 ${status.badge}`;
+    badge.textContent = status.label;
+    badge.classList.remove('d-none');
+  } else {
+    badge.classList.add('d-none');
+  }
+
+  const rows = cfg.modalRows(item);
+  el('modalInfoGrid').innerHTML = rows.map((r) => `
+      <div class="${r.wide ? 'col-12' : 'col-6'}">
+        <div class="p-2 border rounded bg-white">
+          <div class="text-muted">${r.label}</div>
+          <strong>${r.value}</strong>
+        </div>
+      </div>`).join('');
 
   detailModal.show();
 };
