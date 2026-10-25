@@ -17,7 +17,11 @@ const FALLBACK_PRODUCTS = [
   { id: 5, name: "Noise Cancelling Headphones", price: 180.0, stock: 12 },
   { id: 6, name: "Webcam 4K HDR", price: 95.0, stock: 25 },
   { id: 7, name: "USB Condenser Microphone", price: 110.0, stock: 18 },
-  { id: 8, name: "Ergonomic Pro Chair", price: 299.9, stock: 5 }
+  { id: 8, name: "Ergonomic Pro Chair", price: 299.9, stock: 5 },
+  { id: 9, name: "USB-C Hub", price: 45.0, stock: 30 },
+  { id: 10, name: "Portable SSD 1TB", price: 89.99, stock: 22 },
+  { id: 11, name: "Bluetooth Speaker", price: 59.5, stock: 35 },
+  { id: 12, name: "Tablet Stand", price: 19.99, stock: 50 }
 ];
 
 // Application state
@@ -442,20 +446,20 @@ async function deleteProduct(id) {
  */
 function resolveProductImage(name = '') {
   const lower = name.toLowerCase();
-  if (lower.includes('laptop') || lower.includes('notebook') || lower.includes('computadora')) {
-    return '/assets/laptop.jpg';
-  }
-  if (lower.includes('mouse') || lower.includes('raton')) {
-    return '/assets/mouse.jpg';
-  }
-  if (lower.includes('teclado') || lower.includes('keyboard')) {
-    return '/assets/teclado.jpg';
-  }
-  if (lower.includes('monitor') || lower.includes('pantalla')) {
-    return '/assets/laptop.jpg';
-  }
+  if (lower.includes('laptop') || lower.includes('notebook')) return '/assets/laptop.jpg';
+  if (lower.includes('mouse')) return '/assets/mouse.jpg';
+  if (lower.includes('keyboard')) return '/assets/teclado.jpg';
+  if (lower.includes('monitor')) return '/assets/monitor.jpg';
+  if (lower.includes('headphone')) return '/assets/headphones.jpg';
+  if (lower.includes('webcam')) return '/assets/webcam.jpg';
+  if (lower.includes('microphone')) return '/assets/usb-microphone.jpg';
+  if (lower.includes('chair')) return '/assets/office-chair.jpg';
+  if (lower.includes('hub')) return '/assets/usb-c-hub.jpg';
+  if (lower.includes('ssd') || lower.includes('drive')) return '/assets/portable-ssd.jpg';
+  if (lower.includes('speaker')) return '/assets/bluetooth-speaker.jpg';
+  if (lower.includes('tablet stand') || lower.includes('stand')) return '/assets/tablet-stand.jpg';
   // Fallback to a generic tech photo
-  return '/assets/teclado.jpg';
+  return '/assets/laptop.jpg';
 }
 
 /**
