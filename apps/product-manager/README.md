@@ -1,64 +1,121 @@
-# Sistema de Gestión de Productos 
-# Cristopher Alquinga - Programación WEB
+# Product Manager
 
+![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-6DB33F?logo=springboot&logoColor=white)
+![H2](https://img.shields.io/badge/H2-Database-blue)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
 
-Proyecto web completo desarrollado con arquitectura cliente-servidor.
+A full-stack product catalog with a Spring Boot REST API backend and a vanilla
+JavaScript frontend. Supports full CRUD, real-time search, and a responsive grid layout.
 
-## 🚀 Arquitectura del Proyecto
+Part of the [Web Apps Monorepo](../../README.md).
 
-* **Backend**: Spring Boot 4 / Java 17+, Base de datos en memoria H2, Spring Data JPA y API REST (`/api/products`).
-* **Frontend**: Vanilla JavaScript + Vite, Bootstrap 5, Tailwind CSS v3, CSS Grid, Flexbox y Media Queries.
+## Table of contents
 
----
+- [Architecture](#architecture)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation and setup](#installation-and-setup)
+- [API reference](#api-reference)
+- [Project structure](#project-structure)
 
-## 📁 Estructura del Repositorio
+## Architecture
 
-```text
-├── backend/                  # Servidor API REST en Spring Boot
-│   ├── src/main/java/        # Controladores, Entidades JPA, Repositorios, Seeder
-│   ├── src/main/resources/   # application.properties (puerto 8080, H2 console)
-│   ├── mvnw / mvnw.cmd       # Maven Wrapper
-│   └── pom.xml               # Dependencias del backend
-│
-├── frontend/                 # Aplicación Cliente con Vite
-│   ├── public/assets/        # Imágenes de productos (Laptop, Mouse, Teclado)
-│   ├── css/styles.css        # Media Queries (1, 3 y 4 columnas), Grid y Flexbox
-│   ├── js/app.js             # Consumo de API, Buscador en tiempo real y Pop-up Modal
-│   ├── index.html            # Interfaz de usuario limpia
-│   └── package.json          # Scripts de ejecución (npm run dev)
-│
-└── .gitignore                # Reglas de exclusión para Node y Java
-```
+Client-server architecture: a Spring Boot REST API backed by an in-memory H2
+database, consumed by a Vite frontend.
 
----
+## Features
 
-## 💻 Características del Frontend
+- **Full CRUD**: create, read, update and delete products through the API.
+- **Real-time search**: instant filtering by name, ID or price as the user types.
+- **Interactive detail modal**: clicking a product card opens a modal with full
+  details, a visual stock level indicator, and edit/delete actions.
+- **Responsive design**: 1 column on mobile (< 768px), 3 columns on tablet
+  (768px–1199px), 4 columns on large screens (>= 1200px).
 
-1. **Responsive Design con Media Queries**:
-   * **Móvil (< 768px)**: 1 columna de productos.
-   * **Normal / Tablet (768px a 1199px)**: 3 columnas de productos.
-   * **Pantallas grandes (>= 1200px)**: 4 columnas de productos.
-2. **Buscador en Tiempo Real**: Filtrado instantáneo por nombre, ID o precio conforme el usuario escribe.
-3. **Pop-up Modal Interactivo**: Al hacer clic en cualquier tarjeta se abre un modal con información detallada, barra visual de nivel de stock y acciones de edición/eliminación.
-4. **CRUD Completo con la API**: Operaciones `GET`, `POST`, `PUT` y `DELETE` sincronizadas con Spring Boot.
+## Tech stack
 
----
+| Layer | Technology |
+|---|---|
+| Backend | Java 17, Spring Boot 4, Spring Data JPA |
+| Database | H2 (in-memory) |
+| Frontend | Vite, Vanilla JavaScript, Bootstrap 5, Tailwind CSS |
 
-## 🛠️ Instrucciones de Ejecución
+## Prerequisites
 
-### 1. Iniciar el Backend (Spring Boot)
-Abre una terminal y ejecuta:
+- [Java 17](https://adoptium.net/) or newer
+- [Node.js 20+](https://nodejs.org/) and npm
+
+## Installation and setup
+
+### 1. Start the backend (Spring Boot)
+
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
-> El servidor estará disponible en `http://localhost:8080/api/products` (Consola H2 en `http://localhost:8080/h2-console`).
 
-### 2. Iniciar el Frontend (Vite)
-Abre otra terminal y ejecuta:
+The API will be available at `http://localhost:8080/api/products`.
+The H2 web console is available at `http://localhost:8080/h2-console`
+(JDBC URL: `jdbc:h2:mem:arquidb`, user: `sa`, no password).
+
+### 2. Start the frontend (Vite)
+
+In a separate terminal:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-> La aplicación web estará disponible en `http://localhost:5173/`.
+
+The web app will be available at `http://localhost:5173/`.
+
+### 3. Build for production
+
+```bash
+cd frontend
+npm run build
+```
+
+## API reference
+
+Base URL: `/api/products`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/products` | List all products |
+| `GET` | `/api/products/{id}` | Get a single product by ID |
+| `POST` | `/api/products` | Create a new product |
+| `PUT` | `/api/products/{id}` | Update an existing product |
+| `DELETE` | `/api/products/{id}` | Delete a product |
+
+**Example request body** (`POST` / `PUT`):
+
+```json
+{
+  "name": "Wireless Mouse",
+  "price": 25.5,
+  "stock": 40
+}
+```
+
+## Project structure
+
+```text
+├── backend/                  # Spring Boot REST API server
+│   ├── src/main/java/        # Controllers, JPA entities, repositories, seeder
+│   ├── src/main/resources/   # application.properties (port 8080, H2 console)
+│   ├── mvnw / mvnw.cmd       # Maven Wrapper
+│   └── pom.xml               # Backend dependencies
+│
+├── frontend/                 # Vite client application
+│   ├── public/assets/        # Product images
+│   ├── css/styles.css        # Media queries, Grid and Flexbox layout
+│   ├── js/app.js             # API consumption, real-time search and detail modal
+│   ├── index.html            # Application entry point
+│   └── package.json          # Run scripts (npm run dev / build)
+│
+└── .gitignore
+```
