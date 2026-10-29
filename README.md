@@ -108,8 +108,25 @@ GitHub Actions runs on every pull request:
 - **CI** (`.github/workflows/ci.yml`): builds and tests the backend (`./mvnw verify`)
   and builds every frontend app (`npm ci && npm run build`). A pull request cannot be
   merged unless all checks pass.
-- **CD** *(in progress)*: automated deployment to the `testing` and `production`
-  environments on AWS EC2 via SSH, gated by GitHub Environments.
+- **CD to testing** (`.github/workflows/deploy-test.yml`): on every push to `test`,
+  builds and pushes the three Docker images to GitHub Container Registry, then
+  deploys to a single EC2 instance over SSH.
+- **CD to production** (`.github/workflows/deploy-prod.yml`): on every push to `main`,
+  builds and pushes the Docker images, then deploys to **two EC2 instances** behind
+  an **Application Load Balancer** (one target group per app, each balancing between
+  both instances). The landing page always links through the load balancer's DNS
+  name, never a single instance's address.
+
+## Infrastructure
+
+| Environment | Entry point | Instances |
+|---|---|---|
+| Testing | EC2 public IP (ports 8090/8091/8092) | 1 |
+| Production | Application Load Balancer DNS (ports 80/8081/8082) | 2, behind the ALB |
+
+Both environments run the same Docker images, built once in CI and orchestrated with
+Docker Compose (`docker-compose.yml` for testing, `docker-compose.prod.yml` for
+production) behind a native Nginx reverse proxy on each instance.
 
 ## Project management
 
