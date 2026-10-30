@@ -1,0 +1,35 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: progra-web-prod-backend
+    restart: unless-stopped
+    # Bound to localhost only: not reachable from the internet directly.
+    # The host's native Nginx reverse-proxies /api requests here.
+    ports:
+      - "127.0.0.1:8180:8080"
+    networks:
+      - progra-web-prod
+
+  product-manager-frontend:
+    image: ${PM_FRONTEND_IMAGE}
+    container_name: progra-web-prod-product-manager
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:5273:80"
+    networks:
+      - progra-web-prod
+
+  rick-and-morty-frontend:
+    image: ${RM_FRONTEND_IMAGE}
+    container_name: progra-web-prod-rick-and-morty
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5274:80"
+    networks:
+      - progra-web-prod
+
+networks:
+  progra-web-prod:
+    driver: bridge

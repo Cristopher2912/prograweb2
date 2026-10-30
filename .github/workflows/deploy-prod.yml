@@ -1,0 +1,198 @@
+name: Deploy to production
+
+# Runs on every push to main (i.e. once a release PR from test is approved
+# and merged). Builds the three Docker images, pushes them to GitHub
+# Container Registry, then deploys to BOTH EC2 instances behind the
+# production Application Load Balancer over SSH. Gated by the "production"
+# GitHub Environment, which can require manual approval before this
+# workflow is allowed to run.
+
+on:
+  push:
+    branches: [main]
+
+env:
+  # Docker image tags must be lowercase; the GitHub owner/repo names may not be.
+  IMAGE_PREFIX: ghcr.io/cristopher2912/progra-web
+
+jobs:
+  build-and-push:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/product-manager/backend
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}-backend:prod
+
+      - name: Build and push Product Manager frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/product-manager/frontend
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}-product-manager-frontend:prod
+
+      - name: Build and push Rick and Morty frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/rick-and-morty/frontend
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}-rick-and-morty-frontend:prod
+
+  deploy-instance-1:
+    name: Deploy to EC2 instance 1 (production)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy deployment files to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,deploy/nginx/production.conf,home/index.html"
+          target: "~/progra-web-prod"
+          strip_components: 0
+
+      - name: Deploy containers and reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/progra-web-prod
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cat > .env << EOF
+            BACKEND_IMAGE=${{ env.IMAGE_PREFIX }}-backend:prod
+            PM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-product-manager-frontend:prod
+            RM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-rick-and-morty-frontend:prod
+            EOF
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            # The landing page always points through the load balancer,
+            # never at a single instance's own address.
+            sed -i \
+              -e "s#__PRODUCT_MANAGER_URL__#http://${{ secrets.ALB_DNS }}:8081/#g" \
+              -e "s#__RICK_AND_MORTY_URL__#http://${{ secrets.ALB_DNS }}:8082/#g" \
+              home/index.html
+            sudo mkdir -p /var/www/progra-web-prod/home
+            sudo cp home/index.html /var/www/progra-web-prod/home/index.html
+            sudo chmod -R 755 /var/www/progra-web-prod
+            sudo cp deploy/nginx/production.conf /etc/nginx/conf.d/production.conf
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+  deploy-instance-2:
+    name: Deploy to EC2 instance 2 (production)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy deployment files to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,deploy/nginx/production.conf,home/index.html"
+          target: "~/progra-web-prod"
+          strip_components: 0
+
+      - name: Deploy containers and reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/progra-web-prod
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cat > .env << EOF
+            BACKEND_IMAGE=${{ env.IMAGE_PREFIX }}-backend:prod
+            PM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-product-manager-frontend:prod
+            RM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-rick-and-morty-frontend:prod
+            EOF
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            sed -i \
+              -e "s#__PRODUCT_MANAGER_URL__#http://${{ secrets.ALB_DNS }}:8081/#g" \
+              -e "s#__RICK_AND_MORTY_URL__#http://${{ secrets.ALB_DNS }}:8082/#g" \
+              home/index.html
+            sudo mkdir -p /var/www/progra-web-prod/home
+            sudo cp home/index.html /var/www/progra-web-prod/home/index.html
+            sudo chmod -R 755 /var/www/progra-web-prod
+            sudo cp deploy/nginx/production.conf /etc/nginx/conf.d/production.conf
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+  deploy-instance-3:
+    name: Deploy to EC2 instance 3 (production)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy deployment files to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST_3 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,deploy/nginx/production.conf,home/index.html"
+          target: "~/progra-web-prod"
+          strip_components: 0
+
+      - name: Deploy containers and reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST_3 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/progra-web-prod
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cat > .env << EOF
+            BACKEND_IMAGE=${{ env.IMAGE_PREFIX }}-backend:prod
+            PM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-product-manager-frontend:prod
+            RM_FRONTEND_IMAGE=${{ env.IMAGE_PREFIX }}-rick-and-morty-frontend:prod
+            EOF
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            sed -i \
+              -e "s#__PRODUCT_MANAGER_URL__#http://${{ secrets.ALB_DNS }}:8081/#g" \
+              -e "s#__RICK_AND_MORTY_URL__#http://${{ secrets.ALB_DNS }}:8082/#g" \
+              home/index.html
+            sudo mkdir -p /var/www/progra-web-prod/home
+            sudo cp home/index.html /var/www/progra-web-prod/home/index.html
+            sudo chmod -R 755 /var/www/progra-web-prod
+            sudo cp deploy/nginx/production.conf /etc/nginx/conf.d/production.conf
+            sudo nginx -t
+            sudo systemctl reload nginx

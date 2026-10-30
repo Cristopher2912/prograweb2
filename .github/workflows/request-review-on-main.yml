@@ -1,0 +1,29 @@
+name: Request review on main
+
+# Automatically requests a review from the instructor only when a pull
+# request targets the `main` branch (production). Pull requests into
+# `dev` or `test` do not trigger any notification.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  request-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Request reviewer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['JuanGuevara90']
+            });

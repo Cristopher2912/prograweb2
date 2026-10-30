@@ -1,0 +1,76 @@
+name: CI
+
+# Runs on every pull request into dev, test or main.
+# Builds and tests the backend and every frontend app.
+# If any job fails, the pull request check is marked as failed.
+
+on:
+  pull_request:
+    branches: [dev, test, main]
+
+jobs:
+  backend:
+    name: Backend (Spring Boot)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/product-manager/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Build and run tests
+        run: ./mvnw --batch-mode verify
+
+  frontend-product-manager:
+    name: Frontend (Product Manager)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/product-manager/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/product-manager/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  frontend-rick-and-morty:
+    name: Frontend (Rick and Morty)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/rick-and-morty/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/rick-and-morty/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
